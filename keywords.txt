@@ -1,5 +1,5 @@
 Maker_LED_Matrix_32		KEYWORD1
-Maker_LED_Matrix_64		KEYWORD1begin			KEYWORD2
+begin			KEYWORD2
 initLEDMatrix		KEYWORD2
 brightness		KEYWORD2
 message			KEYWORD2
