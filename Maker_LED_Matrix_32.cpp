@@ -11,7 +11,7 @@ IS31FL3731 matrixL = IS31FL3731(); //LED Matrix IC on the left side of board.
 IS31FL3731 matrixR = IS31FL3731(); //LED Matrix IC on the right side of board.
 Ticker updateLED = Ticker();                                     //Constructor for timmer that refreshes display.
 
-Maker_LED_Matrix_32::Maker_LED_Matrix() {
+Maker_LED_Matrix_32::Maker_LED_Matrix_32() {
 }
 
 //--------------------------------------LOW LEVEL FUNCTIONS FOR DISPLAYING A MESSAGE--------------------------------------
