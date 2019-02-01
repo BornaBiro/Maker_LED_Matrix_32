@@ -5,7 +5,8 @@
 #include <IS31FL3731.h>  //Library for IS31FL3731 LED Matrix Driver.
 #include <Ticker.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
+#include <WiFiClient.h>
+#include <ESP8266HTTPClient.h>
 
 IS31FL3731 matrixL = IS31FL3731(); //LED Matrix IC on the left side of board.
 IS31FL3731 matrixR = IS31FL3731(); //LED Matrix IC on the right side of board.
@@ -301,11 +302,11 @@ void Maker_LED_Matrix_32::picture8Bit(uint8_t* p, int xSize, int ySize, int x0, 
 
 //--------------------------------------FUNCTIONS FOR WEB--------------------------------------
 int Maker_LED_Matrix_32::wifiNetwork(const char* _ssid, const char* _pass) {
-    int retry = 10;                              //Number of retrys for connectin on WLAN network.
+    int retry = 20;                              //Number of retrys for connectin on WLAN network.
     WiFi.mode(WIFI_STA);                         //Setting up WiFi module mode.
     WiFi.begin(_ssid, _pass);                    //Try to connect to desiered network.
     do {                                         //Wait and keep checking if it's connected to network until we are really connected or we run out of retrys
-       delay(250);
+       delay(500);
        retry--;
        } while (WiFi.status() != WL_CONNECTED && retry != 0);
     if(retry) {                                  //If we still have any more retrys left, that means we are successfuly connected to WiFi network.
@@ -316,64 +317,60 @@ int Maker_LED_Matrix_32::wifiNetwork(const char* _ssid, const char* _pass) {
     }
 }
 
-int Maker_LED_Matrix_32::webPage(char* web, char* url, int port, int _ms, int _stp, int _rep) {
+int Maker_LED_Matrix_32::webPage(char* url,  int _ms, int _stp, int _rep) {
   if (!wlanSuccess) return 0;                          //If we are not connected to WiFi, return 0, becouse we can't loar web page if we do not have at least WiFi connection.
-  if(_ms < 75 || _stp < 1) return 0;                   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
+  if(_ms < 75 || _stp < 1) return 0;                   //It doesn't make any sense to make delay less than 75 ms, especially negative one and step smaller than 1, so if that happens, return.
   
   WiFiClient client;
-  char webText[_BUFFERSIZE];                                           //Buffer for text that we downloaded from internet.
-  uint8_t webSuccess = client.connect(web, port);                      //Try to connect to specified web client and specific port.
-  if (webSuccess) {                                                    //If that was successful, try grabbing web page (or text from web page that will be shown on display).
-    client.print(String("GET ") + String(url) + "\r\n\r\n\r\n");       //Setup a GET Requiest.
-    while (client.connected()) {                                       //As longh as we have connection to client and as long as there is some data, keep saving that.
-      if (client.available()) {
-        String line = client.readStringUntil('\n');                    //Copy that into string.
-        if(line.length() > _BUFFERSIZE) {
-          client.stop();                                                     //Disconnect from client.
-          return 0;
-        }else{
-          line.toCharArray(webText, line.length());                      //Copy that into buffer.
+  HTTPClient http;
+  if (http.begin(client, url)) {
+    int httpCode = http.GET();
+        if (httpCode == HTTP_CODE_OK) {
+			String payload = http.getString();
+			char webText[_BUFFERSIZE];
+          	payload.toCharArray(webText, payload.length());
+          	int webTextSize = strlen(webText);                                 //Calculate the lenght of string.
+    		
+			//This part of code finds Croatian letters and change them into ASCII letters. Not really nesscery for this library.
+    		for (int16_t i = 0; i < webTextSize; i++) {
+      			if (webText[i] == 196 || webText[i] == 197) memmove(&webText[i], &webText[i + 1], webTextSize - i);
+      			if (webText[i] == 141 || webText[i] == 135) webText[i] = 'c';
+      			if (webText[i] == 161) webText[i] = 's';
+      			if (webText[i] == 190) webText[i] = 'z';
+    		}
+    		message(webText, _ms, _stp, _rep);        //Send message to display with desiered delay and step for scrolling
+        } else {
+        	message("Failed to open web", _ms, _stp, -1); 
+          	return 0;
         }
-      }
+        http.end();
     }
-    client.stop();                                                     //Disconnect from client.
-
-    int webTextSize = strlen(webText);                                 //Calculate the lenght of string.
-    //This part of code finds Croatian letters and change them into ASCII letters. Not really nesscery for this library.
-    for (int16_t i = 0; i < webTextSize; i++) {
-      if (webText[i] == 196 || webText[i] == 197) memmove(&webText[i], &webText[i + 1], webTextSize - i);
-      if (webText[i] == 141 || webText[i] == 135) webText[i] = 'c';
-      if (webText[i] == 161) webText[i] = 's';
-      if (webText[i] == 190) webText[i] = 'z';
-    }
-    message(webText, _ms, _stp, _rep);        //Send message to display with desiered delay and step for scrolling
     return 1;                           //Everything went ok? Return 1 for success!
-  } else {
-    return 0;                           //Something went wrong? Send zero.
-  }
 }
 
-int Maker_LED_Matrix_32::webPageText(char* web, char* url, int port, char* txt, int _n) {  //This function grabs textz form web page and saves it in user defined string that is send as function argument.
+int Maker_LED_Matrix_32::webPageText(char* url, char* webText, int _n) {  //This function grabs textz form web page and saves it in user defined string that is send as function argument.
   if (!wlanSuccess) return 0;                                                         //Everything else is basicly the same as previous function, with only one exception, it does not write anything on dipslay. Useful if we want to parse something and than display it.
+  
   WiFiClient client;
-  uint8_t webSuccess = client.connect(web, port);
-  if (webSuccess) {
-    client.print(String("GET ") + String(url) + "\r\n\r\n\r\n");
-    while (client.connected()) {
-      if (client.available()) {
-        String line = client.readStringUntil('\n');
-        line.toCharArray(txt, _n - 1);
-      }
+  HTTPClient http;
+  if (http.begin(client, url)) {
+    int httpCode = http.GET();
+        if (httpCode == HTTP_CODE_OK) {
+			String payload = http.getString();
+          	payload.toCharArray(webText, _n);
+          	int webTextSize = strlen(webText);                                 //Calculate the lenght of string.
+    		
+			//This part of code finds Croatian letters and change them into ASCII letters. Not really nesscery for this library.
+    		for (int16_t i = 0; i < _n; i++) {
+      			if (webText[i] == 196 || webText[i] == 197) memmove(&webText[i], &webText[i + 1], _n - i);
+      			if (webText[i] == 141 || webText[i] == 135) webText[i] = 'c';
+      			if (webText[i] == 161) webText[i] = 's';
+      			if (webText[i] == 190) webText[i] = 'z';
+    		}
+        } else {
+          	return 0;
+        }
+        http.end();
     }
-    for (int16_t i = 0; i < _n; i++) {
-      if (txt[i] == 196 || txt[i] == 197) memmove(&txt[i], &txt[i + 1], _n - i);
-      if (txt[i] == 141 || txt[i] == 135) txt[i] = 'c';
-      if (txt[i] == 161) txt[i] = 's';
-      if (txt[i] == 190) txt[i] = 'z';
-    }
-    client.stop();
-    return 1;
-  } else {
-    return 0;
-  }
+    return 1;                           //Everything went ok? Return 1 for success!
 }

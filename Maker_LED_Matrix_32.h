@@ -60,8 +60,8 @@ class Maker_LED_Matrix_32 {
              void picture8Bit(uint8_t* p, int xSize, int ySize, int x0, int y0, uint8_t bright);    //Function that removes everything from screen and displays a 8bit gray scale image.
              
              int wifiNetwork(const char* _ssid, const char* _pass);                            //Funcion connects to WLAN network.
-             int webPage(char* web, char* url, int port, int _ms, int _stp, int _rep);         //Function opens web page and displays text on LED matrix.
-             int webPageText(char* web, char* url, int port, char* txt, int _n);               //Function opens a web and saves data into a string without displayig on matrix.
+             int webPage(char* url, int _ms, int _stp, int _rep);         //Function opens web page and displays text on LED matrix.
+             int webPageText(char* url, char* webText, int _n);               //Function opens a web and saves data into a string without displayig on matrix.
              
              int _dispMode;
 };

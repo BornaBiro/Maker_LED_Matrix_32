@@ -26,11 +26,11 @@ void setup() {
     Serial.print("Connected to ");  Serial.println(wlan_ssid);
   }
 
-  //Let's try to write smoe message on display.
+  //Let's try to write some message on display.
   led.message("Trying to open web page...", 150, 3, 1);
 
   //While that message is scrolling, let's try to open a web page and display content from them on display. In this case todays Weather forecast for Croatia. :)
-  led.webPage("api.thingspeak.com", "https://api.thingspeak.com/apps/thinghttp/send_request?api_key=8X15NO5QU69EOGCJ", 80, 150, 3, 1);
+  led.webPage("http://api.thingspeak.com/apps/thinghttp/send_request?api_key=8X15NO5QU69EOGCJ", 150, 3, 1);
 
   do {
     delay(250);
@@ -38,7 +38,7 @@ void setup() {
 
   //And now, let' try to open web page and save it's content to string and then display it. Useful if parsing is needed before displaying.
   //We are saving tommorow Weather forecast for Croatia. String is limited to 99 characters.
-  led.webPageText("api.thingspeak.com", "https://api.thingspeak.com/apps/thinghttp/send_request?api_key=Y37X9PRCK72JXMQQ", 80, scrollText, 100);
+  led.webPageText("http://api.thingspeak.com/apps/thinghttp/send_request?api_key=8B8OCD7Y2P6KXQK2", scrollText, 100);
 
   //Now let's print a new message on display, without scrolling.
   led.message(scrollText, 150, 2, 0);
