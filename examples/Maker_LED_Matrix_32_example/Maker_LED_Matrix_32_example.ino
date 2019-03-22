@@ -1,6 +1,11 @@
 /*
    This is example code on how to use Maker LED Matrix Dispaly library on e-radionica Maker LED Matrix Display Board with ESP8266 and two IL31LF3731.
-   It shows how to prite text/message to display, write picture, scroll it, pause it and remove it.
+   It shows how to print text/message to display, write picture, scroll it, pause it and remove it.
+   
+   !!!!NOTE!!!!
+   In order to use this library, you have to have at least ESP8266 Core version 2.5.0.
+   If You have 2.4.2 and older, you must update ESP8266 Core.
+   It will not work on 2.4.2. and older!
 */
 
 #include "Maker_LED_Matrix_32.h"           //We include Maker LED Matrix Display library.
@@ -56,7 +61,6 @@ uint16_t picPositionx[2] = {60, 139};                 //Put x cooridinates where
 uint16_t picPositiony[2] = {0, 1};                    //Put y cooridinates where you want to put picture. Also, it has to be in order, x = 0 is for first picture, x = 1 is for second picture and so on...
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);                         //Setting up a serial comunication.
   //ESP.wdtDisable();
   //Maker LED Matrix display library init.

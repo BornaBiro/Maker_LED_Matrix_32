@@ -1,3 +1,10 @@
+/*
+   !!!!NOTE!!!!
+   In order to use this library, you have to have at least ESP8266 Core version 2.5.0.
+   If You have 2.4.2 and older, you must update ESP8266 Core.
+   It will not work on 2.4.2. and older!
+*/
+
 #include "Maker_LED_Matrix_32.h"           //We include Maker LED Matrix Display library
 Maker_LED_Matrix_32 led;                   //Maker LED Matrix display library constructor.
 
@@ -6,7 +13,6 @@ const char* wlan_pass = "INSERT_YOUR_WIFI_PASSWORD_HERE";         //WLAN network
 char scrollText[100];                       //String for text from web
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);                                       //Setting up a serial comunication.
 
   if (!led.begin()) {
@@ -49,6 +55,5 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   //Nothing...
 }
